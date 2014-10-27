@@ -1,0 +1,2 @@
+Sub Missing puts placeholders in your library for episodes you are missing. This allows the information and art to be scraped and displayed in Kodi.
+The display titles of the missing episodes are prefixed with '-missing-'. Kodi will think these episodes are real.
