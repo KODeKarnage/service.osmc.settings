@@ -32,6 +32,13 @@ class walkthru_gui(xbmcgui.WindowXMLDialog):
 		self.hdg.setLabel('Exit')
 		self.hdg.setVisible(True)
 
+		self.cicles = self.getControl(900)
+
+		for x in range(5):
+
+			self.tmp = xbmcgui.ListItem(label=str(x), label2='', thumbnailImage='')
+			self.cicles.addItem(self.tmp)
+
 	def onClick(self, controlID):
 
 		if controlID == 110:
@@ -47,6 +54,8 @@ def open():
 	GUI = walkthru_gui(xmlfile, scriptPath, 'Default')
 
 	GUI.doModal()
+
+	log('Exiting GUI')
 
 	del GUI
 

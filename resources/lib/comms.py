@@ -26,7 +26,7 @@ class communicator(threading.Thread):
 		self.daemon = True
 
 		# create the listening socket, it creates new connections when connected to
-		self.address = '/var/run/osmc.settings.sockfile'
+		self.address = '/var/tmp/osmc.settings.sockfile'
 
 		if os.path.exists(self.address):
 			os.remove(self.address)
@@ -49,7 +49,7 @@ class communicator(threading.Thread):
 
 			self.stopped = True
 				
-			sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
 			sock.connect(self.address)
 			sock.send('exit')
 			sock.close()
@@ -76,7 +76,21 @@ class communicator(threading.Thread):
 			# this will allow the loop to collect all parts of the message
 			conn.setblocking(0)
 
-			data = conn.recv(8192)
+			passed = False
+			total_wait = 0
+			wait = 5
+
+			while not xbmc.abortRequested and not passed and total_wait < 2500:
+				try:
+					data = conn.recv(8192)
+					passed = True
+				except:
+					total_wait += wait
+					xbmc.sleep(5)
+
+			if not passed:
+				log('Connection failed to collect data.')
+				break
 
 			log('data = %s' % data)
 
