@@ -1,15 +1,17 @@
 # Standard modules
 import socket
 import threading
+import os
 
 # XBMC modules
 import xbmc
 import xbmcaddon
 import xbmcgui
 
-log = xbmc.log
+def log(message):
+	xbmc.log(str(message))
 
-def comms(object):
+class communicator(threading.Thread):
 
 	def __init__(self, parent_queue):
 
@@ -17,15 +19,19 @@ def comms(object):
 		self.parent_queue = parent_queue
 
 		# not sure I need this, but oh well
-		self.wait_evt = threading.Event()
+		#self.wait_evt = threading.Event()
 
 		threading.Thread.__init__(self)
 
 		self.daemon = True
 
 		# create the listening socket, it creates new connections when connected to
-		self.address = ('localhost', 16458)
-		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		self.address = '/var/tmp/osmc.settings.sockfile'
+
+		if os.path.exists(self.address):
+			os.remove(self.address)
+
+		self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
 
 		# allows the address to be reused (helpful with testing)
 		self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -63,26 +69,16 @@ def comms(object):
 			# wait here for a connection
 			conn, addr = self.sock.accept()
 
-			# holds the message parts
-			message = []
+			log(conn)
+			log(addr)
 
 			# turn off blocking for this temporary connection
 			# this will allow the loop to collect all parts of the message
 			conn.setblocking(0)
 
-			# recv will throw a 'resource temporarily unavailable' error 
-			# if there is no more data
-			while True:
-				
-				try:
-					data_part = conn.recv(8192)
-				except:
-					break
+			data = conn.recv(8192)
 
-				# add the partial message to the holding list
-				message.append(data_part)
-
-			data = ''.join(message)
+			log('data = %s' % data)
 
 			# if the message is to stop, then kill the loop
 			if data == 'exit':

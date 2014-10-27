@@ -26,6 +26,9 @@ import time
 import re
 import sys
 import json
+import Queue
+import os
+import threading
 
 # XBMC modules
 import xbmc
@@ -36,27 +39,82 @@ import xbmcgui
 sys.path.append(xbmc.translatePath(os.path.join(xbmcaddon.Addon().getAddonInfo('path'), 'resources','lib')))
 import walkthru
 import settings
+import comms
+
+
+__addon__        = xbmcaddon.Addon()
+__addonid__      = __addon__.getAddonInfo('id')
+__setting__      = __addon__.getSetting
+
+def log(message):
+	xbmc.log(str(message))
 
 class Main(object):
 
+
 	def __init__(self):
 
-		pass
+		# queue for communication with the comm and Main
+		self.parent_queue = Queue.Queue()
+
 		# create socket, listen for comms
-		# 
+		self.listener = comms.communicator(self.parent_queue)
+		self.listener.start()
+
+		# daemon
+		self._daemon()
 
 
+	def _daemon(self):
+
+		log('daemon started')
+
+		while not xbmc.abortRequested:
+
+			if not self.parent_queue.empty():
+
+				response = self.parent_queue.get()
+
+				log('response : %s' % response)
+
+				self.parent_queue.task_done()
+		
+				if response == 'open':
+
+					self.open_gui()
+
+			xbmc.sleep(1000)
+
+			log('blip!')
+
+		self.listener.stop()
 
 
-if ( __name__ == "__main__" ):
+	def open_gui(self):
+
+		log('firstrun? %s' % __setting__('firstrun'))
+		
+		if __setting__('firstrun') == 'true':
+
+			log('Opening walkthru GUI')
+
+		gui = walkthru
+
+			# __addon__.setSetting('firstrun', 'false')
+
+		# else:
+		# 	gui = settings.gui()
+
+		threading.Thread(target=gui.open()).start()
+
+
+if __name__ == "__main__":
 
 	Main()
 
-	while not xbmc.abortRequested:
-
-		xbmc.sleep(10)
-
 	del Main
+
+	log('Exiting OSMC Settings')
 
 
 

@@ -15,5 +15,38 @@ import socket
 import threading
 import time
 import sys
-sys.path.append(xbmc.translatePath(os.path.join(xbmcaddon.Addon().getAddonInfo('path'), 'resources','lib')))
+# sys.path.append(xbmc.translatePath(os.path.join(xbmcaddon.Addon().getAddonInfo('path'), 'resources','lib')))
+
+def log(message):
+	xbmc.log(str(message))
+
+class walkthru_gui(xbmcgui.WindowXMLDialog):
+
+	def __init__(self, strXMLname, strFallbackPath, strDefaultName):
+
+		pass
+
+	def onInit(self):
+
+		self.hdg = self.getControl(110)
+		self.hdg.setLabel('Exit')
+		self.hdg.setVisible(True)
+
+	def onClick(self, controlID):
+
+		if controlID == 110:
+			self.close()
+
+
+def open():
+
+	__addon__        = xbmcaddon.Addon()
+	scriptPath       = __addon__.getAddonInfo('path')
+	xmlfile = 'walkthru.xml'
+
+	GUI = walkthru_gui(xmlfile, scriptPath, 'Default')
+
+	GUI.doModal()
+
+	del GUI
 
