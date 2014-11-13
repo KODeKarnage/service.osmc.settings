@@ -232,6 +232,7 @@ for x in range(20):
 	print len(scanner.wifiNetworks)
 
 print 'scan over'
+print scanner.wifiNetworks
 
 for k, connection in scanner.wifiNetworks.iteritems():
 	print "Name: %s   Strength: %s" % (connection[1], (int(float(connection[5]) * 1000.0)) / 10.0)
